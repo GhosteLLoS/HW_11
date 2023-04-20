@@ -72,10 +72,10 @@ class Birthday(Field):
 
 
 class Record:
-    def __init__(self, name:Name, phone:Phone, birthday:Birthday) -> None:
+    def __init__(self, name:Name, phone:Phone=None, birthday:Birthday=None) -> None:
         self.name = name
         self.phones = [phone] if phone else []
-        self.birthday = birthday if birthday is not None else []
+        self.birthday = birthday
 
     def __str__(self):
         return str(self.phones)
