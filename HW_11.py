@@ -1,6 +1,7 @@
 from collections import UserDict
 from datetime import datetime, timedelta, date
 from itertools import islice
+import pickle
 
 
 class Field:
@@ -51,7 +52,7 @@ class Phone(Field):
 
 
 class Birthday(Field):
-    def __init__(self, value=None):
+    def __init__(self, value):
         super().__init__(value)
 
     def __str__(self):
@@ -71,10 +72,10 @@ class Birthday(Field):
 
 
 class Record:
-    def __init__(self, name:Name, phone:Phone=None, birthday:Birthday=None) -> None:
+    def __init__(self, name:Name, phone:Phone, birthday:Birthday) -> None:
         self.name = name
         self.phones = [phone] if phone else []
-        self.birthday = birthday if birthday is not None else Birthday(None)
+        self.birthday = birthday if birthday is not None else []
 
     def __str__(self):
         return str(self.phones)
@@ -85,7 +86,7 @@ class Record:
     def add_number(self, phone:Phone):
         self.phones.append(phone)
     
-    def del_phone(self, phone):
+    def del_phone(self, phone:Phone):
         
         for i, p in enumerate(self.phones):
             if p.value == phone.value:
@@ -113,13 +114,10 @@ class Record:
         bday = datetime.strptime(self.birthday.value, "%d.%m.%Y")
 
         if bday < today:
-            bday = bday.replace(year = today.year + 1)
-            delta = bday - today
-        elif bday > today:
-            bday = bday.replace(year= today.year)
-            delta = today - bday
+            bday = bday.replace(year = today.year)
+            delta = (bday - today).days
         
-        return delta.days
+        return delta
     
 
     
@@ -134,6 +132,15 @@ class Addressbook(UserDict):
             yield list(islice(self.data.items(), self.start_iterate, self.start_iterate + page))
             self.start_iterate += page
             start += page
+
+    def search(self,param):                                 #new 12HW
+        if len(param) < 3:
+            return 'Param > 3'
+        result = []
+        for rec in self.values():
+            if param in str(rec):
+                result.append(str(rec))
+        return '\n'.join(result)
 
 
 contacts = Addressbook()
@@ -165,7 +172,6 @@ def add(*args):
 @input_errors
 def change_phone_number(*args):
     name = Name(args[0])
-    
     old_phone = Phone(args[1])
     new_phone = Phone(args[2])
     if contacts.get(name.value):
@@ -190,7 +196,7 @@ def show_all(*args, contacts=contacts, page=None):
     for name, rec in contacts.data.items():
         phones = ", ".join(str(phone) for phone in rec.phones)
         days_to_birthday = rec.days_to_birthday()
-        contact_list.append(f"{name} {phones} days to birthday:{days_to_birthday}")
+        contact_list.append(f"{name} {phones} days to birthday: {days_to_birthday}")
 
     if not contacts.data:
         return 'No contacts'
@@ -246,3 +252,13 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
+                                            #new 12HW
+    file_name = 'data1.bin'
+
+    with open(file_name, "wb") as fh:
+        pickle.dump(fh)
+
+
+    with open(file_name, "rb") as fh:
+        pickle.load('data1.bin', fh)
